@@ -1,7 +1,7 @@
 #ifndef __FILE_COMPRESS_H__
 #define __FILE_COMPRESS_H__
 // #pragma pack(push)
-// #pragma pack(1) //内存对其改为1个字节对齐模式
+// #pragma pack(1)
 #include "huffmanTree.h"
 #include <Windows.h>
 #include <cassert>
@@ -94,21 +94,22 @@ public:
         }
         HuffmanTreeNode *root = q.top();
 
-        showHuffmanTree(root);
+        if (DEBUG) showHuffmanTree(root);
 
         // start recording weight
         map<unsigned char, string> m;
         recordWeight(m, root);
-
-        ofstream fout2(antithesesName);
         int count = 0;
-        for (int i = 0; i < 256; i++) {
-            if (_chars[i]->_weight) {
-                fout2 << (int)_chars[i]->_ch << " " << m[_chars[i]->_ch] << endl;
-                count++;
+        if (antithesesName || DEBUG) {
+            ofstream fout2(antithesesName);
+            for (int i = 0; i < 256; i++) {
+                if (_chars[i]->_weight) {
+                    fout2 << (int)_chars[i]->_ch << " " << m[_chars[i]->_ch] << endl;
+                    count++;
+                }
             }
+            fout2.close();
         }
-        fout2.close();
 
         int index = 0;
         struct FILE_HEAD fileHead;
@@ -119,7 +120,7 @@ public:
             if (_chars[i]->_weight) {
                 w[index]._ch = i;
                 w[index]._freq = _chars[i]->_weight;
-                cout << (unsigned char)i << _chars[i]->_weight << (unsigned char)w[index]._ch << w[index]._freq << endl;
+                if (DEBUG) cout << (unsigned char)i << _chars[i]->_weight << (unsigned char)w[index]._ch << w[index]._freq << endl;
                 index++;
             }
         }
@@ -152,8 +153,7 @@ public:
         // start writing code
         FILE *foutp = fopen(outfilename, "wb");
         // cout << (int)fileHead.sizeOfw << endl;
-        cout << (int)fileHead.alphaVariety << endl;
-        cout << (int)fileHead.lastValidBit << endl;
+        if (DEBUG) cout << (int)fileHead.alphaVariety << endl << (int)fileHead.lastValidBit << endl;
         fwrite(&fileHead, sizeof(struct FILE_HEAD), 1, foutp);
         fwrite(w, sizeof(struct WEIGHT), fileHead.alphaVariety, foutp);
         // fclose(foutp);
@@ -201,16 +201,14 @@ public:
         ch = fgetc(fileOut2);
         while (!feof(fileOut2)) {
             string str = m[ch];
-            cout << ch << "(ch)" << endl;
-            cout << str << " " << endl;
             for (int i = 0; i < str.length(); i++) {
                 temp <<= 1;
-                cout << str[i];
+                if (DEBUG) cout << str[i];
                 if (str[i] == '1')
                     temp += 1;
                 counter++;
                 if (counter == 8) {
-                    cout << "hex" << hex << (int)temp << endl;
+                    if (DEBUG) cout << "hex" << hex << (int)temp << endl;
                     fwrite(&temp, sizeof(unsigned char), 1, foutp);
                     // fout << temp;
                     counter = 0;
@@ -223,7 +221,7 @@ public:
             temp <<= 1;
             counter++;
             if (counter == 8) {
-                cout << "hex" << hex << (int)temp << endl;
+                if (DEBUG) cout << "hex" << hex << (int)temp << endl;
                 fwrite(&temp, sizeof(unsigned char), 1, foutp);
                 // fout << temp;
                 counter = 0;

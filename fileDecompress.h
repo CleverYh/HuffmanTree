@@ -1,7 +1,7 @@
 #ifndef __FILE_DECOMPRESS_H__
 #define __FILE_DECOMPRESS_H__
 // #pragma pack(push)
-// #pragma pack(1) //内存对其改为1个字节对齐模式
+// #pragma pack(1)
 #include "huffmanTree.h"
 #include <Windows.h>
 #include <cassert>
@@ -23,32 +23,23 @@ class decodeFile {
     HuffmanTreeNode *root;
 
 public:
+
     void readFileHead(const char *sourceFileName, const char *outFileName) {
-        cout << "Enter readFileHead" << endl;
         unsigned char buffer;
         FILE *fpIn = fopen(sourceFileName, "rb");
         fread(&fileHead, sizeof(struct FILE_HEAD), 1, fpIn); // read file head
-        // cout << (int)fileHead.sizeOfw << endl;
-        cout << (int)fileHead.alphaVariety << endl;
-        cout << (int)fileHead.lastValidBit << endl;
-        // fseek(fpIn, 4, SEEK_SET); //略过前面4个字节的元数据
-        // long curLocation = ftell(fpIn);
+        // cout << (int)fileHead.alphaVariety << endl;
+        // cout << (int)fileHead.lastValidBit << endl;
         int alphaVariety = (int)fileHead.alphaVariety;
         w = new struct WEIGHT[alphaVariety];
-        fread(w, sizeof(struct WEIGHT), alphaVariety, fpIn);
+        fread(w, sizeof(struct WEIGHT), alphaVariety, fpIn); // read weight
         fclose(fpIn);
-        // cout << (unsigned char)w[0]._ch << " " << w[0]._freq << endl;
-        // fread(&buffer, sizeof(unsigned char), 1, fpIn);
     }
 
-    void createHuffmanTree() {
-        cout << "Enter createHuffmanTree" << endl;
-        // start building huffman tree
+    void createHuffmanTree() { // start building huffman tree
         priority_queue<HuffmanTreeNode *, vector<HuffmanTreeNode *>, cmp> q;
         for (int i = 0; i < fileHead.alphaVariety; i++) {
-            cout << i << endl;
             if (w[i]._freq != 0) {
-                // cout << w[i]._ch << " " << w[i]._freq << endl;
                 _chars[w[i]._ch] = new HuffmanTreeNode();
                 _chars[w[i]._ch]->_ch = w[i]._ch;
                 _chars[w[i]._ch]->_weight = w[i]._freq;
@@ -63,111 +54,97 @@ public:
             HuffmanTreeNode *newHead = new HuffmanTreeNode(left, right, left->_weight + right->_weight, '\0');
             q.push(newHead);
         }
-        // root = new HuffmanTreeNode;
         root = q.top();
-        cout << "Exit createHuffmanTree" << endl;
     }
 
     void decodeHuffmanTree(const char *sourceFileName, const char *outFileName) {
         readFileHead(sourceFileName, outFileName);
         createHuffmanTree();
-        cout << "Enter decodeHuffmanTree" << endl;
         unsigned char inValue;
         unsigned char outValue;
         long curLocation;
         FILE *fpIn = fopen(sourceFileName, "rb");
         FILE *fpOut = fopen(outFileName, "wb");
         fseek(fpIn, 0L, SEEK_END);
-        long fileSize = ftell(fpIn); //文件总长度fileSize
-        cout << "size: " << dec << fileSize << endl;
-        // cout << sizeof(struct WEIGHT) * fileHead.alphaVariety;
-        fseek(fpIn, 2 + sizeof(struct WEIGHT) * fileHead.alphaVariety, SEEK_SET); //略过前面2个字节的元数据，字符种类和频度
+        long fileSize = ftell(fpIn); // total length
+        if (DEBUG) cout << "size: " << dec << fileSize << endl;
+        fseek(fpIn, 2 + sizeof(struct WEIGHT) * fileHead.alphaVariety, SEEK_SET); // jump 2 bytes meta data and weight
         curLocation = 2 + sizeof(struct WEIGHT) * fileHead.alphaVariety + 1;
         fread(&inValue, sizeof(unsigned char), 1, fpIn);
-        cout <<"inValue:"<< hex << (int)inValue << endl;
+        if (DEBUG) cout << "inValue:" << hex << (int)inValue << endl;
         unsigned char index = 0;
-        int i = 1000000; // TODO: Max while to be define
+        int i = MAX_SIZE;
         HuffmanTreeNode *p = root;
         string debug;
         int flag = 0;
         while (i--) {
-            cout<<i<<endl;
-            // cout << "curLoca:"<<dec << curLocation << endl;
             if (p->_left == nullptr && p->_right == nullptr) {
                 outValue = p->_ch;
-                cout << "outValue:" << outValue << " " << curLocation << " " << index<<endl;
+                if (DEBUG) cout << "outValue:" << outValue << " " << curLocation << " " << index << endl;
                 fwrite(&outValue, sizeof(unsigned char), 1, fpOut);
-                if(flag == 1)break;
+                if (flag == 1) break; // to prevent break before write TODO: code here could be more elegant
                 p = root;
             }
-            
 
-            //'1'向左子树走，'0'向右子树走
-            //若超过一个字节，则需要读取下一个字节
-            if (!GET_BYTE(inValue, index)) {
+            if (!GET_BYTE(inValue, index)) { // '0' goes left child
                 p = p->_left;
-                cout<<"left"<<endl;
-                debug.push_back('0');
-            } else {
+                if (DEBUG) debug.push_back('0');
+            } else { // '1' goes right child
                 p = p->_right;
-                debug.push_back('1');
+                if (DEBUG) debug.push_back('1');
             }
-            // cout <<"index"<< index;
+
             index++;
-            if (curLocation > fileSize || curLocation >= fileSize && index >= fileHead.lastValidBit) {
-                cout << "break";
-                flag = 1;
-            }
+            if (curLocation > fileSize || curLocation >= fileSize && index >= fileHead.lastValidBit) flag = 1;
+
             if (index >= 8) {
                 index = 0;
                 fread(&inValue, sizeof(unsigned char), 1, fpIn);
-                cout <<"inValue"<< hex << (int)inValue << endl;
+                if (DEBUG) cout << "inValue" << hex << (int)inValue << endl;
                 curLocation++;
-                // cout << "curLoca:" << curLocation << endl;
             }
         }
 
+        if (DEBUG) cout << debug << endl;
+
         fclose(fpIn);
         fclose(fpOut);
-        cout << debug << endl;
-        cout << "End decodeHuffmanTree" << endl;
     }
 
+    /* --------- if (DEBUG) ----------- */ 
     void showHuffmanTree() {
-        string s = "|";
-        dfs(s,root);
+        string s = "| ";
+        dfs(s, root);
     }
 
-    void dfs(string &s, HuffmanTreeNode* root) {
+    void dfs(string &s, HuffmanTreeNode *root) {
         if (!root->_left && !root->_right) {
-            printNode(s,root);
+            printNode(s, root);
             return;
         }
 
-        if (s,root->_left) {
+        if (s, root->_left) {
             s.push_back('0');
-            dfs(s,root->_left);
+            dfs(s, root->_left);
             s.pop_back();
         }
 
-        if (s,root->_right) {
+        if (s, root->_right) {
             s.push_back('1');
-            dfs(s,root->_right);
+            dfs(s, root->_right);
             s.pop_back();
         }
 
         return;
-
-        
     }
 
-    void printNode(string &s,HuffmanTreeNode* Node){
-            printf("%-5u %-4u %-5u %-4c",
-                   Node->_left,
-                   Node->_right,
-                   Node->_weight,
-                   Node->_ch);
-            cout << s << endl;
+    void printNode(string &s, HuffmanTreeNode *Node) {
+        // printf("%-5u %-4u %-5u %-4c",
+        //        Node->_left,
+        //        Node->_right,
+        //        Node->_weight,
+        //        Node->_ch);
+        if (DEBUG) cout << Node->_weight << " " << Node->_ch << s << endl;
     }
 };
 // #pragma pack(pop)

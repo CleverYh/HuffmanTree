@@ -1,56 +1,49 @@
 #ifndef __HUFFMAN_TREE_H__
 #define __HUFFMAN_TREE_H__
+
+#define DEBUG false
+#define MAX_SIZE 100000000 // prevent endless loop
+// get the bit of the index in a byte
+#define GET_BYTE(_byte, _index) (((_byte) & (1 << ((_index) ^ 7))) != 0)
+// set and clear
+#define SET_BYTE(_byte, _index) ((_byte) |= (1 << ((_index) ^ 7)))
+#define CLR_BYTE(_byte, _index) ((_byte) &= (~(1 << ((_index) ^ 7))))
+
 // #pragma pack(push)
-// #pragma pack(1) //内存对其改为1个字节对齐模式
+// #pragma pack(1)
 #include <iostream>
 #include <string>
 
 using namespace std;
 
 struct FILE_HEAD {
-    unsigned char alphaVariety; //字符种类
-    // unsigned char sizeOfw;    //w大小
-    unsigned char lastValidBit; //最后一个字节的有效位数
-    // unsigned char unused[1];    //待用空间
-};                             //这个结构体总共占用4个字节的空间
+    unsigned char alphaVariety; // alpha variety
+    // unsigned char sizeOfw; 
+    unsigned char lastValidBit; // last valid bit
+    // unsigned char unused[1];
+};  // occupied 2 bytes
 
-struct HuffmanTreeNode {
-    HuffmanTreeNode* _left;
-    HuffmanTreeNode* _right;
-//    HuffmanTreeNode* _father;
-    int _weight;
-    unsigned char _ch;
-
-    HuffmanTreeNode (HuffmanTreeNode* left = nullptr, HuffmanTreeNode* right = nullptr, int weight = 0, unsigned char ch = 0) :
-    _left(left), _right(right),  _weight(weight), _ch(ch) {}
-
-};
-
-struct WEIGHT{
+struct WEIGHT {
     unsigned char _ch;
     unsigned char _freq;
 };
-class cmp{ // compare in priority_queue
-public:
-    bool operator() (const HuffmanTreeNode* left, const HuffmanTreeNode* right) {
-        return left->_weight > right->_weight;
-    } 
+
+struct HuffmanTreeNode {
+    //    HuffmanTreeNode* _father;
+    HuffmanTreeNode *_left;
+    HuffmanTreeNode *_right;
+    int _weight;
+    unsigned char _ch;
+
+    HuffmanTreeNode(HuffmanTreeNode *left = nullptr, HuffmanTreeNode *right = nullptr, int weight = 0, unsigned char ch = 0) : _left(left), _right(right), _weight(weight), _ch(ch) {}
 };
 
-//得到index位的值，若index位为0，则GET_BYTE值为假，否则为真
-#define GET_BYTE(vbyte, index) (((vbyte) & (1 << ((index) ^ 7))) != 0)
-//index位置1
-#define SET_BYTE(vbyte, index) ((vbyte) |= (1 << ((index) ^ 7)))
-//index位置0
-#define CLR_BYTE(vbyte, index) ((vbyte) &= (~(1 << ((index) ^ 7))))
-// class HuffmanTree {
-//     HuffmanTreeNode* root;
+class cmp { // compare in priority_queue
+public:
+    bool operator()(const HuffmanTreeNode *left, const HuffmanTreeNode *right) {
+        return left->_weight > right->_weight;
+    }
+};
 
-// public:
-//     HuffmanTree() {}
-//     HuffmanTree () {
-
-//     }
-// };
 // #pragma pack(pop)
-#endif  /* __HUFFMAN_TREE_H__ */
+#endif /* __HUFFMAN_TREE_H__ */
