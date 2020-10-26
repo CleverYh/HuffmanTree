@@ -10,7 +10,7 @@ Build together with Haoqin Liu.
 
 # Compress & Decompress File Using Huffman Tree
 
-_19335025 陈禹翰 chenyh369@mail2.sysu.edu.cn  19335137 刘皓青_
+_chenyh369@mail2.sysu.edu.cn_
 
 2020年10月25日
 
