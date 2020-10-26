@@ -4,7 +4,7 @@ Coding Proj.3
 
 This is a co-op homework from DCS211-Data Structure and Algorithm by Qiao Haiyan.  
 
-Build together with Haoqin Liu.  
+Build together with Liu Haoqin.  
 
 #### CO-OP CODING PROJECT REPORT:
 
