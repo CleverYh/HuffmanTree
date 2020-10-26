@@ -28,7 +28,7 @@ public:
         unsigned char buffer;
         FILE *fpIn = fopen(sourceFileName, "rb");
         fread(&fileHead, sizeof(struct FILE_HEAD), 1, fpIn); // read file head
-        cout << (int)fileHead.sizeOfw << endl;
+        // cout << (int)fileHead.sizeOfw << endl;
         cout << (int)fileHead.alphaVariety << endl;
         cout << (int)fileHead.lastValidBit << endl;
         // fseek(fpIn, 4, SEEK_SET); //略过前面4个字节的元数据
@@ -81,8 +81,8 @@ public:
         long fileSize = ftell(fpIn); //文件总长度fileSize
         cout << "size: " << dec << fileSize << endl;
         // cout << sizeof(struct WEIGHT) * fileHead.alphaVariety;
-        fseek(fpIn, 4 + sizeof(struct WEIGHT) * fileHead.alphaVariety, SEEK_SET); //略过前面4个字节的元数据，字符种类和频度
-        curLocation = 4 + sizeof(struct WEIGHT) * fileHead.alphaVariety + 1;
+        fseek(fpIn, 2 + sizeof(struct WEIGHT) * fileHead.alphaVariety, SEEK_SET); //略过前面2个字节的元数据，字符种类和频度
+        curLocation = 2 + sizeof(struct WEIGHT) * fileHead.alphaVariety + 1;
         fread(&inValue, sizeof(unsigned char), 1, fpIn);
         cout <<"inValue:"<< hex << (int)inValue << endl;
         unsigned char index = 0;

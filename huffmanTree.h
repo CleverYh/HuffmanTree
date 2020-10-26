@@ -9,9 +9,9 @@ using namespace std;
 
 struct FILE_HEAD {
     unsigned char alphaVariety; //字符种类
-    unsigned char sizeOfw;    //w大小
+    // unsigned char sizeOfw;    //w大小
     unsigned char lastValidBit; //最后一个字节的有效位数
-    unsigned char unused[1];    //待用空间
+    // unsigned char unused[1];    //待用空间
 };                             //这个结构体总共占用4个字节的空间
 
 struct HuffmanTreeNode {

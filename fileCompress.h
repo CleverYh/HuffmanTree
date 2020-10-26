@@ -114,7 +114,7 @@ public:
         struct FILE_HEAD fileHead;
         struct WEIGHT *w = new struct WEIGHT[count];
         fileHead.alphaVariety = (unsigned char)count;
-        fileHead.sizeOfw = (unsigned char)sizeof(struct WEIGHT);
+        // fileHead.sizeOfw = (unsigned char)sizeof(struct WEIGHT);
         for (int i = 0; i < 256; i++) {
             if (_chars[i]->_weight) {
                 w[index]._ch = i;
@@ -151,7 +151,7 @@ public:
 
         // start writing code
         FILE *foutp = fopen(outfilename, "wb");
-        cout << (int)fileHead.sizeOfw << endl;
+        // cout << (int)fileHead.sizeOfw << endl;
         cout << (int)fileHead.alphaVariety << endl;
         cout << (int)fileHead.lastValidBit << endl;
         fwrite(&fileHead, sizeof(struct FILE_HEAD), 1, foutp);
